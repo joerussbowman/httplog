@@ -1,0 +1,251 @@
+#!/bin/sh
+
+# removed zlib validation, automatically adds
+# the -lz option to the CFLAGS as well
+#
+# - Joe Bowman - 7/22/2011
+
+
+# Set define options
+#
+use_zlib=yes
+use_debug=yes
+
+# Set the prefix path
+#
+prefix=/opt/apache
+
+# Set the install paths
+#
+bindir=${prefix}/bin
+mandir=${prefix}/man
+
+# Parse command line arguments
+#
+ac_prearg=
+for ac_option
+do
+
+	# If the previous option needs an argument, assign it.
+	#
+	if [ -n "$ac_prearg" ]; then
+		eval "$ac_prearg=\$ac_option"
+		ac_prearg=
+		continue
+	fi
+
+	ac_optarg=`expr "x$ac_option" : 'x[^=]*=\(.*\)'`
+
+	case $ac_option in
+		--prefix)
+			prefix=$ac_prearg
+			bindir=${prefix}/bin
+			mandir=${prefix}/man
+			;;
+		--prefix=*)
+			prefix=$ac_optarg
+			bindir=${prefix}/bin
+			mandir=${prefix}/man
+			;;
+		--bindir)
+			bindir=$ac_prearg
+			;;
+		--bindir=*)
+			bindir=$ac_optarg
+			;;
+		--mandir)
+			mandir=$ac_prearg
+			;;
+		--mandir=*)
+			mandir=$ac_optarg
+			;;
+		--enable-*)
+			ac_feature=`expr "x$ac_option" : 'x-*enable-\([^=]*\)'`
+			if [ "$ac_optarg" = "y" -o "$ac_optarg" = "yes" ]; then
+				ac_optarg=yes
+			else
+				ac_optarg=no
+			fi
+			eval use_${ac_feature}=$ac_optarg
+			;;
+		--disable-*)
+			ac_feature=`expr "x$ac_option" : 'x-*disable-\(.*\)'`
+			eval use_${ac_feature}=no
+			;;
+		*)
+			cat << EOF
+Usage: configure [options]
+Options: [defaults in brackets after descriptions]
+Configuration:
+  --help                  print this message
+Directory and file names:
+  --prefix=PREFIX         install files in PREFIX [${prefix}]
+  --bindir=DIR            user executables in DIR [PREFIX/bin]
+  --mandir=DIR            man documentation in DIR [PREFIX/man]
+Features and packages:
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+--enable and --with options recognized:
+--enable-zlib             include zlib compression support [${use_zlib}]
+--enable-debug            include detailed error messages [${use_debug}]
+
+EOF
+			exit 1
+			;;
+	esac
+done
+
+# Make sure environment is sane
+#
+rm -f ./dummy* ./defines.h 1>/dev/null 2>&1
+
+# Determine what compiler to use
+#
+cat << EOF > ./dummy.c
+int main(void) {return(0);}
+EOF
+if [ -n "$CC" ]; then
+	$CC -c -o ./dummy ./dummy.c 1>/dev/null 2>&1
+	if [ $? -ne 0 ]; then
+		$CC=
+	fi
+fi
+if [ -z "$CC" ]; then
+	for c in gcc egcs cc ; do
+		$c -c -o ./dummy ./dummy.c 1>/dev/null 2>&1
+		if [ $? -eq 0 ]; then
+			CC=$c
+			break
+		fi
+	done
+	rm -f ./dummy*
+	if [ -z "$CC" ]; then
+		echo "Checking compiler: not found."
+		echo
+		echo "No suitable compiler found.  Install one or set $$CC env variable"
+		echo
+		exit 1
+	fi
+fi
+rm -f ./dummy* 1>/dev/null 2>&1
+echo "Checking compiler: $CC found."
+
+# Get the current version number
+#
+echo "#define VERSION \"`cat VERSION`\"" >> ./defines.h
+
+# Test to see if zlib 1.1.3 is available
+#
+if [ "$use_zlib" = "yes" ]; then
+	echo "#define USE_ZLIB" >> ./defines.h
+else
+	use_zlib=no
+	echo "#undef USE_ZLIB" >> ./defines.h
+fi
+
+# Test to see if errno functions are available
+#
+if [ "$use_debug" = "yes" ]; then
+	cat << EOF > ./dummy.c
+#include <stdio.h>
+#include <errno.h>
+int main(void) {
+	return(printf("%s", strerror(errno)));
+}
+EOF
+	$CC -o ./dummy ./dummy.c 1>/dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		use_debug=yes
+		echo "Checking errno functions: found."
+		echo "#define USE_DEBUG" >> ./defines.h
+	else
+		use_debug=no
+		echo "Checking errno functions: not found."
+		echo "#undef USE_DEBUG" >> ./defines.h
+	fi
+	rm -f ./dummy* 1>/dev/null 2>&1
+else
+	use_debug=no
+	echo "#undef USE_DEBUG" >> ./defines.h
+fi
+
+# Test to see if hostent functions are avialable
+#
+cat << EOF > ./dummy.c
+#include <stdio.h>
+#include <netdb.h>
+int main(void) {
+	struct hostent *hostinfo;
+	if ((hostinfo = gethostbyname("localhost")) != NULL)
+		return(0);
+	return(1);
+}
+EOF
+$CC -o ./dummy ./dummy.c 1>/dev/null 2>&1
+if [ $? -ne 0 ]; then
+	$CC -o ./dummy ./dummy.c -lresolv 1>/dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		LDFLAGS="$LDFLAGS -lresolv"
+	else
+		$CC -o ./dummy ./dummy.c -lnsl 1>/dev/null 2>&1
+		if [ $? -eq 0 ]; then
+			LDFLAGS="$LDFLAGS -lnsl"
+		else
+			echo
+			echo "Unable to locate gethostbyname() function."
+			echo
+			echo "This program requires the use of hostname lookup functions, but"
+			echo "we are not able to find them on your system.  Sorry."
+			echo
+			exit 1
+		fi
+	fi
+fi
+rm -f ./dummy* 1>/dev/null 2>&1
+
+# Tell the user what they just did
+#
+cat << EOF
+
+Your configuration settings are as follows:
+
+Use zlib compression:    ${use_zlib}
+Use detailed errors:     ${use_debug}
+httplog install dir:     ${bindir}
+manpage install dir:     ${mandir}
+
+You are now ready to run 'make'.
+
+EOF
+
+# Make our Makefile now
+#
+if [ ! "$CFLAGS" ]; then
+	CFLAGS="-lz -O2 -Wall"
+fi
+
+cat << EOF > ./Makefile
+all:
+	${CC} ${CFLAGS} -o ./httplog ./httplog.c ${LDFLAGS}
+	@echo
+	@echo "Good, now you can run 'make install'."
+	@echo
+
+clean:
+	rm -f ./dummy* ./httplog
+
+distclean: clean
+	rm -f ./Makefile ./defines.h
+
+install: install-bin install-man
+
+install-bin:
+	install -d ${bindir}
+	install -s -m755 ./httplog ${bindir}/httplog
+
+install-man:
+	install -d ${mandir}/man8
+	install -m644 ./httplog.8 ${mandir}/man8/httplog.8
+EOF
+
+#End of configure.

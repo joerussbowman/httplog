@@ -1,0 +1,84 @@
+.TH HTTPLOG 8 "August 8, 2001" "Apache Tools" httplog
+.SH HTTPLOG
+httplog \- \fIApache\fR webserver logfile rollover program
+
+.SH SYNOPSIS
+.B httplog
+[\fI-z\fR] [\fI-u USER\fR] [\fI-g GROUP\fR] [\fI-s SYMLINK\fR] [\fI-b BUFFER_SIZE\fR] \fILOGFILE\fR
+
+.SH DESCRIPTION
+This program makes \fIApache\fR act similar to Microsofts' IIS webserver in its
+logging style (as opposed to every logfile entry in one single huge logfile).
+This allows you to easily maintain your webserver logfiles for statistics
+packages in an easily organizable manner without user intervention.
+
+.SH USAGE
+It takes one argument at the command line, the path to a logfile as a template.
+The template pathname can use any valid special characters permitted in
+\fIstrftime\fR(3).  Other optional arguments can be appended to the command line.
+
+Optional filename parsing flags that may be used alongside the \fIstrftime\fR(3)
+flags are:
+.TP
+.B %1
+replaced with systems host name.
+.TP
+.B %2
+replaced with systems domain name.
+.TP
+.B %3
+replaced with systems fully qualified name.
+
+
+.SH OPTIONS
+
+.TP
+.B \-h
+output short help message and exit.
+.TP
+.B \-z
+Compress logfiles with \fIzlib\fR once logfile rollover period hits and new logfile
+is generated.
+.TP
+.B \-u USER
+Run as specified user rather than current user (typically root).
+.TP
+.B \-g GROUP
+Run as specified group rather than current group (typically root).
+.TP
+.B \-s SYMLINK
+Create a symlink to the currently active logfile.  This symlink does not have to be
+in the same directory as the currently active logfile, and % expandoes do not expand
+in the symlink filename.
+.TP
+.B \-b BUFFER_SIZE
+Use specified buffer size to buffer logfile data rather than default buffer size
+defined by your system at compile time by BUFSIZ.  This option also changes buffer
+flush style from line buffer mode to full buffer mode.
+
+.SH REQUIRES
+You must have \fIApache\fR installed.  This program has not been tested with any other
+webserver software.
+.br
+To be able to use the \fI-z\fR option, you must have \fIzlib\fR installed on your system
+before compiling \fBhttplog\fR.
+
+.SH EXAMPLES
+CustomLog "|/var/lib/apache/bin/httplog /var/log/http/%m%d%Y.log -s /var/log/http/access.log" combined
+.br
+CustomLog "|/var/lib/apache/bin/httplog -z -u http -g users /var/log/http/%b/%m%d%Y.log" combined
+.br
+CustomLog "|/var/lib/apache/bin/httplog /var/log/http/%b/%m%d%y.log" combined
+.br
+CustomLog "|/var/lib/apache/bin/httplog /var/log/%D/referrer.log" referrer
+
+.SH FILES
+\fIhttpd.conf\fR Apache configuration file, see \fIhttpd(8)\fR 
+
+.SH "SEE ALSO"
+.BR httpd (8),
+
+.SH AUTHOR
+Eli Sand <nutbar@innocent.com>
+.br
+http://nutbar.chemlab.org/

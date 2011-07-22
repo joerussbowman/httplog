@@ -1,0 +1,73 @@
+Installation Instructions
+-------------------------------------------------------------------------------
+At the command prompt, type:
+
+  configure
+
+This will determine where stuff should be installed, and what functions you can
+use.  You may run configure with the --help option to see what options are
+available to you.  If configure passes, you can then run:
+
+  make
+
+This will make the binary file 'httplog' in the current directory.  If you want
+to install httplog and the man page, simply run:
+
+  make install
+
+Once you have compiled and installed the httplog binary, you must edit your
+Apache webserver configuration file (httpd.conf).  This file is typically
+located in /var/lib/apache/conf, but may be anywhere, depending on the
+installation of Apache on your server.
+
+Once you have found your configuration file, find the section with all the
+logfile settings (search for "CustomLog") and add the following line:
+
+  CustomLog "|/path/to/httplog /path/to/logfiles/ex%Y%m%d.log" combined
+
+Note!  Change the pathnames in the above example to reflect the directories
+you wish to use in your setup!
+
+The 'ex%Y%m%d.log' is the strftime logfile path template in that example.
+You can use any style of template you want - see strftime(3).
+
+You can even use httplog to log Apaches' errors with the ErrorLog directive!
+
+However, please note that when you start up Apache, you will see some odd
+occurences.  This is due to a problem with how Apache starts up.  When Apache
+starts, it reads the httpd.conf and accesses some settings, among them is the
+ErrorLog directive so it can set up the error logfile so that any mis-
+configurations will be logged.  This causes Apache to spawn a copy of httplog
+like it should, however, once this is done Apache then re-reads the httpd.conf
+to load everything else.  Unfortunately, it re-runs the ErrorLog directive once
+again, spawning another httplog.  Now, on most OS's, Apache is smart and sends
+a SIGTERM to the first httplog process to kill it off so there's only one
+running, but on a few OS's, this does not happen and you are left with two
+httplog processes running, but only one of them is being used - this doesn't
+break anything, but just so you know if you see 2 httplog's working on the
+error.log file, you know why.  This problem can not be fixed within httplog.
+
+Also, when you start up Apache, you will see httplog output it's 'startup
+banner' because when the first httplog is spawned, there's no ErrorLog file to
+output that to, so it goes to stdout.  Second, if Apache kills the first process
+properly, you will also get the message that httplog caught a SIGTERM and is
+exiting output to stdout.  This is completely normal if you use httplog in your
+ErrorLog directive, and can not be fixed within httplog.
+
+
+Examples:
+
+  ErrorLog "|/var/lib/apache/bin/httplog /var/log/http/errors-%m%d%y.log"
+
+  CustomLog "|/var/lib/apache/bin/httplog /var/log/http/%b/%m%d%y.log" combined
+  CustomLog "|/var/lib/apache/bin/httplog /var/log/%D/referrer.log" referrer
+
+Once you have added the appropriate line to your configuration file, run:
+
+  apachectl restart
+
+This will restart your Apache webserver and have it reload your httpd.conf file
+so as to have the new settings take effect.
+
+
+Thats all!  Enjoy!

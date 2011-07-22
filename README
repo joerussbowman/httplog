@@ -1,0 +1,78 @@
+This is a modified version of the httplog application which to date
+I've only been able to find on freshmeat
+
+http://freshmeat.net/projects/httplog
+
+I removed the check for zlib version, as it failed for newer
+versions and for me personally this was the main reason I needed
+it. I also had to update the compiler flags to include -lz.
+
+Just a quick hack, not pretty. But you should be able to download
+./configure
+make
+
+To get a running binary to use with apache. Tested on RHEL6 64bit
+with zlib libraries already installed, run against apache 2.2.17
+
+ - Joe Bowman
+
+
+What is httplog?
+-------------------------------------------------------------------------------
+This program is intended to be a logfile rollover program for the Apache web
+server.
+
+
+How does it work?
+-------------------------------------------------------------------------------
+It takes one argument at the command line, the path to a logfile as a template.
+The template pathname can use any valid special characters permitted in
+strftime(3).  Other optional arguments can be appended to the command line.
+
+If you want to have httplog run as a different user and/or group (instead of
+running as root - possible security risks), you can use the `-u <userid>' and
+`-g <groupid>' to have httplog run as that user and/or group.
+
+You can also specify `-b <buffer size in bytes>' to have httplog use a custom
+buffer size for memory storage of log data, rather than the default value of
+just line buffering mode (flushes data per newline).
+
+If you want to have your logfiles gzipped because of size constraints, you can
+now use the `-z' option to have httplog gzip all logfiles once it's done
+writing all data to them (when a rollover period hits and a new logfile is to
+be created).
+
+You may have a symlink to the currently active logfile by using the `-s' option
+and specifying a filename to be used as the symlink.
+
+
+What are its benefits?
+-------------------------------------------------------------------------------
+This program makes Apache act similar to Microsofts' IIS webserver in its
+logging style (as opposed to every logfile entry in one single huge logfile).
+This allows you to easily maintain your webserver logfiles for statistics
+packages in an easily organizable manner without user intervention.
+
+Because of the buffer option added since v1.5, httplog may also be usefull for
+extremely large sites that get thousands of hits per second, and typically
+disable logging to save their hard drives from dying.  The buffer size option
+can be used to create an extremely large buffer in ram so that logfiles would
+not be flushed as often as if it were in line buffering mode, and in essence,
+could prolong the life of your valuable drives by decreasing their activity.
+
+
+Where do I report bugs?
+-------------------------------------------------------------------------------
+You should report any and all bugs/quirks to the author at nutbar@innocent.com
+There is unfortunately no mailing list, as this program is quite small and
+simple.
+
+There is an httplog forum where you can ask questions, etc.  This forum is at
+http://0x00.org/forums/, however please email me if you want a quick responce.
+
+
+Where can I get the latest version?
+-------------------------------------------------------------------------------
+The current site where httplog is being stored is http://nutbar.chemlab.org/
+New versions and news regarding the program will be posted on this site first.
+You should also be able to find links to this program on http://freshmeat.net/

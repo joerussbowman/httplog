@@ -1,0 +1,115 @@
+Release v2.1 (23/01/2002)
+-------------------------
+ - Removed a couple of lines of code that could cause segfaults if errors
+   were imminent while opening new a file or allocating the buffer memory
+
+Release v2.0 (18/01/2002)
+-------------------------
+ - Changed from using sys_errlist[] to strerror() (Steve Kondik)
+ - Fixed up some problems with Solaris in the configure script.  Thanks to
+   Steve Kondik for submitting the patches
+ - Added more test cases to the configure script.  It should detect anything
+   you need to get httplog to compile, or give you an error saying why not
+ - Fixed up some bugs in the configure script.  Thanks to Kenneth Gullberg
+   <kenneth@unix.oktan.com> for the fixes and suggestions
+
+Release v1.9 (25/11/2001)
+-------------------------
+ - Added the ability to create a symlink to the currently active logfile
+ - Re-added the RPM .spec file which was removed in v1.8 due to
+   incompatibility.  Issue `rpm -ta httplog-1.9.tar.gz' to make an .rpm
+
+Release v1.8 (20/11/2001)
+-------------------------
+ - Fixed & updated httplog manpage
+ - Fixed bug where buffer size was never used, always line buffering
+   Thanks to Marcin Deranek <marcin@ripe.net> for noticing the bug
+ - Added some extra '%?' tags that httplog parses before the strftime()
+   call. %1 = hostname, %2 = domain name, %3 = fully qualified domain name
+ - Made up a little configure script, not using autoconf though, all done
+   by hand unfortunately, but httplog is small enough that this is ok
+ - Got rid of the Makefile, as the configure script generates it when run
+ - Changed the install prefix from /var/lib/apache to /opt/apache
+
+Release v1.7 (29/07/2001)
+-------------------------
+ - Changed SIGTERM reaction from just flushing, to flushing and exiting
+   This fixes apache hanging on httplog upon receiving a SIGHUP to restart
+ - Added normal error and errno checking to the setvbuf() and time() calls
+ - Changed the buffer size (-b) option to be an absolute buffer size value
+   This makes it work like it has been described in the README
+ - Renamed CHANGELOG to ChangeLog to conform with autoconfs' idea of odd
+   CAPITAL NotSoCapital naming conventions to confuse users
+ - Added errno code along with normal errors so that you could get a better
+   idea of why an error would happen if one did - this is definable code at
+   compile time with USE_DEBUG (default is on) Thanks to Andrew Anderson
+   <andrew@redhat.com> for this code.
+ - Changed the name of MAX_STDIN to BUFSIZ which we used anyways to go along
+   with the idea of the MAX_PATH -> PATH_MAX change
+ - Changed the name of MAX_PATH to PATH_MAX so we could actually use the kernel
+   defined value
+ - Changed from having waitpid() run every time in the input loop to catching
+   SIGCHLD to clean up the zombie processes (Ben Winslow)
+ - Finally added function prototypes and moved stuff around a bit
+ - Added error checking to the fork() call for the compression stage
+ - Added error checking for compressed filename exceeding PATH_MAX
+
+Release v1.6 (24/06/2001)
+-------------------------
+ - Changed a typo in the README file regarding a 'delay' option which really
+   should have been referring to the buffer size option
+ - Changed all examples to show %Y%m%d rather than %d%m%Y for listing reasons.
+   %Y%m%d is listed in sequential chronological order
+ - Added a startup banner to appear in your error logs, just like Apache does
+   when it is restarted.  Also shows httplog version number
+ - Added a gzip option so that completed logfiles will be gzipped when httplog
+   is done with them and no longer needs to write to the logfile
+   Lots of help and fixes with the gzip option from Ben Winslow
+ - Added error checking to the localtime() call (Ben Winslow)
+ - Changed from using type long to time_t for time() variables (Ben Winslow)
+ - Changed variable optopt to curopt to avoid variable shadowing (Ben Winslow)
+ - Added child forking for compression and zombie process cleanup with some
+   much needed help from Ben Winslow (and many hours reading man pages)
+ - Added a compile time define for USE_ZLIB to enable zlib compression
+   rather than have it compiled in by default (useless idea?)
+
+Release v1.5 (22/06/2001)
+-------------------------
+ - Added the ability to change userid/groupip upon spawning of program.   This
+   will cause all log files created to be owned by that user/group
+ - Added a buffer size option to allow either line buffering mode (buffer size
+   of 0) or a user defined buffer size for fully buffered mode
+
+Release v1.4 (06/04/2001)
+-------------------------
+ - Changed formatting for error messages put out to stderr to match the
+   standard Apache error message format found in error logs
+ - Corrected a spelling mistake in the 'INSTALL' file where it incorrectly
+   listed the Apache command 'apachectl' as 'apachectrl' (dialtone)
+ - Increased the buffer size for input on stdin to 8192 (from 2048).  If BUFSIZ
+   is defined, that value will be used, otherwise, it will be 8192
+ - Added hooks for SIG(HUP|TERM) so that httplog would flush pending logfiles
+   to disk before it could possibly lose it
+
+Release v1.3 (21/03/2001)
+-------------------------
+ - Created CHANGELOG, and INSTALL files, modified README file
+ - Modified the absolute path fix to compare pointer addresses rather than
+   doing a full blown strcmp (string compare) call
+
+Release v1.2 (20/03/2001)
+-------------------------
+ - Modified the directory creation code given to me by nathan@0x00.org
+ - Fixed problem where an absolute path for logfile template would cause
+   program to treat it as a relative path from it's home directory
+
+Release v1.1 (19/03/2001)
+-------------------------
+ - Changed from open/close of fd method during each line of input to filename
+   compare to determine if new fd is required (nathan@0x00.org)
+ - Fixed bug where directories would not be created if they were required as
+   part of the logfile template (ex, using %D) (nathan@0x00.org)
+
+Release v1.0 (18/03/2001)
+-------------------------
+ - Initial release
