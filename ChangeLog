@@ -1,3 +1,8 @@
+Release v2.1.1 (08/09/2011)
+ - Updated the configure script to not check for zlib
+ - Added the -lz option to CFLAGS
+ - Changed the default prefix to /usr/local
+
 Release v2.1 (23/01/2002)
 -------------------------
  - Removed a couple of lines of code that could cause segfaults if errors
