@@ -7,7 +7,7 @@ use_debug=yes
 
 # Set the prefix path
 #
-prefix=/opt/apache
+prefix=/usr/local
 
 # Set the install paths
 #
