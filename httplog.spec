@@ -1,6 +1,6 @@
 Name: httplog
 Group: Applications/Internet
-Version: 2.1
+Version: 2.1.1
 Release: 5
 License: FSL
 Summary:  A utility to rollover Apache log files automatically
@@ -36,6 +36,8 @@ make install
 %{_mandir}/man8/*
 
 %changelog
+* Thu Sep 8 2011 Joseph Bowman <jbowman@tnc.org>
+- Removed zlib checks in configure, and added -lz option to CFLAGS
 * Sun Nov 25 2001 Eli Sand <nutbar@innocent.com>
 - updated to use configure script
 * Tue Jul 17 2001 Andrew Anderson <andrew@redhat.com>

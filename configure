@@ -1,11 +1,5 @@
 #!/bin/sh
 
-# removed zlib validation, automatically adds
-# the -lz option to the CFLAGS as well
-#
-# - Joe Bowman - 7/22/2011
-
-
 # Set define options
 #
 use_zlib=yes
