@@ -36,7 +36,7 @@ make install
 %{_mandir}/man8/*
 
 %changelog
-* Thu Sep 8 2011 Joseph Bowman <jbowman@tnc.org>
+* Thu Sep 8 2011 Joseph Bowman 
 - Removed zlib checks in configure, and added -lz option to CFLAGS
 * Sun Nov 25 2001 Eli Sand <nutbar@innocent.com>
 - updated to use configure script
